@@ -1,0 +1,151 @@
+# app.py
+from flask import Flask, render_template, request, redirect, url_for, flash
+import os
+from datetime import datetime
+
+app = Flask(__name__)
+app.secret_key = 'your_secret_key_here'  # Change this to a random secret key
+
+# Portfolio data (you can customize this with your own information)
+portfolio_data = {
+    "name": "Uday Nalla",
+    "title": "M.Tech CSE Student | Python & Frontend Developer",
+    "about": "I am currently pursuing my M.Tech in Computer Science at Siddartha Institute of Technology, Ibrahimpatnam, building upon my strong foundation from B.Tech in Information Technology at Vignan Institute of Science and Technology.",
+    "email": "udaynalla2374@gmail.com",
+    "phone": "+91 9573524529",
+    "location": "Hyderabad, Telangana, India",
+    "education": [
+        {
+            "degree": "M.Tech (Computer Science)",
+            "institution": "Siddartha Institute of Technology, Ibrahimpatnam",
+            "duration": "2024 - 2026",
+            "status": "1st Year (Pursuing)"
+        },
+        {
+            "degree": "B.Tech (Information Technology)",
+            "institution": "Vignan Institute of Science and Technology, Deshmuki",
+            "duration": "2020 - 2024",
+            "status": "Completed"
+        },
+        {
+            "degree": "Intermediate",
+            "institution": "Sri Gayathri Institutions",
+            "duration": "2018 - 2020",
+            "status": "Completed"
+        },
+        {
+            "degree": "SSC",
+            "institution": "Sri Saraswathi Vidya Mandir High School",
+            "duration": "2018",
+            "status": "Completed"
+        }
+    ],
+    "skills": [
+        {"name": "Python", "level": "Advanced", "icon": "fab fa-python"},
+        {"name": "Frontend", "level": "HTML, CSS, JS", "icon": "fas fa-code"},
+        {"name": "MySQL", "level": "Intermediate", "icon": "fas fa-database"},
+        {"name": "MongoDB", "level": "Intermediate", "icon": "fas fa-server"},
+        {"name": "Git", "level": "Version Control", "icon": "fab fa-git-alt"},
+        {"name": "AWS", "level": "Cloud Services", "icon": "fab fa-aws"},
+        {"name": "UI/UX", "level": "Design Principles", "icon": "fas fa-paint-brush"}
+    ],
+    "projects": [
+        {
+            "name": "Automated Leaf & Fruit Disease Prediction",
+            "category": "btech",
+            "description": "AI-powered system for detecting plant diseases using computer vision and machine learning.",
+            "image": "https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+            "technologies": ["Python", "TensorFlow", "OpenCV", "Flask", "CNN"],
+            "demo_link": "https://disease-prediction-demo.com",
+            "github_link": "https://github.com/udaynalla/plant-disease-detection"
+        },
+        {
+            "name": "Job Role & Salary Prediction",
+            "category": "btech",
+            "description": "Machine learning model that predicts suitable job roles and expected salaries based on skills.",
+            "image": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+            "technologies": ["Python", "Scikit-learn", "Pandas", "Flask", "Regression Models"],
+            "demo_link": "https://job-predictor-demo.com",
+            "github_link": "https://github.com/udaynalla/job-role-predictor"
+        },
+        {
+            "name": "Crowd Detection Camera System",
+            "category": "btech",
+            "description": "IoT-based solution for monitoring and analyzing crowd density in public spaces.",
+            "image": "https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+            "technologies": ["Python", "OpenCV", "Raspberry Pi", "IoT", "Flask"],
+            "demo_link": "https://crowd-detection-demo.com",
+            "github_link": "https://github.com/udaynalla/crowd-detection-system"
+        },
+        {
+            "name": "Movie Ticket Booking System",
+            "category": "btech",
+            "description": "Full-stack web application for online movie ticket reservations with seat selection.",
+            "image": "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+            "technologies": ["Python", "Django", "JavaScript", "PostgreSQL", "Bootstrap"],
+            "demo_link": "https://movie-booking-demo.com",
+            "github_link": "https://github.com/udaynalla/movie-ticket-booking"
+        },
+        {
+            "name": "Fitness Mobile App",
+            "category": "uiux",
+            "description": "UI/UX design for a fitness tracking application with workout plans and progress tracking.",
+            "image": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+            "technologies": ["Adobe XD", "UI/UX Design", "Mobile Design", "User Flows"],
+            "demo_link": "https://xd.adobe.com/view/fitness-app",
+            "github_link": "https://github.com/udaynalla/fitness-app-assets"
+        }
+    ],
+    "experience": [
+        {
+            "title": "Virtual Internships",
+            "duration": "2023 - Present",
+            "description": "Accenture (Forage) – Developer & Technology Job Simulation; Deloitte (Forage) – Technology Job Simulation. Gained practical experience in real-world development scenarios."
+        },
+        {
+            "title": "Academic Projects",
+            "duration": "2020 - 2024",
+            "description": "Smart Irrigation System, Flask-based Web Applications, Personal Portfolio Website. Developed solutions combining hardware and software components."
+        },
+        {
+            "title": "Certifications",
+            "duration": "Ongoing",
+            "description": "PEGA Workshop, Data Analytics using Tableau, Eduonix Cloud Computing, Python (HackerRank), Oracle Certified Foundations Associate. Continuous learning and skill development."
+        }
+    ]
+}
+
+# Store messages (in a real application, you would use a database)
+messages = []
+
+@app.route('/')
+def index():
+    return render_template('index.html', data=portfolio_data, messages=messages)
+
+@app.route('/send_message', methods=['POST'])
+def send_message():
+    if request.method == 'POST':
+        name = request.form['name']
+        email = request.form['email']
+        subject = request.form.get('subject', 'No Subject')
+        message = request.form['message']
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        messages.append({
+            'name': name,
+            'email': email,
+            'subject': subject,
+            'message': message,
+            'timestamp': timestamp
+        })
+        
+        flash('Your message has been sent successfully!', 'success')
+        return redirect(url_for('index') + '#contact')
+
+@app.route('/admin/messages')
+def view_messages():
+    # In a real application, you would add authentication here
+    return render_template('messages.html', messages=messages)
+
+if __name__ == '__main__':
+    app.run(debug=True)
